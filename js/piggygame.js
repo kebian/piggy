@@ -67,7 +67,7 @@ PiggyGame.prototype.getResource = function(url) {
 PiggyGame.prototype.init = function(resources) {
     Game.prototype.init.call(this, resources);
     this.ingame = false;
-    var game = this.game;
+    var game = this;
     this.level.load('original', function() {
         var piggy = game.entities['piggy'];
 
