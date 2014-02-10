@@ -67,8 +67,8 @@ PiggyGame.prototype.getResource = function(url) {
 PiggyGame.prototype.init = function(resources) {
     Game.prototype.init.call(this, resources);
     this.ingame = false;
+    var game = this.game;
     this.level.load('original', function() {
-        var game = this.game;
         var piggy = game.entities['piggy'];
 
         piggy.onCollision = function(entity) {
