@@ -28,9 +28,8 @@ function Matchstick(game, x, y) {
     this.solid = true;
     this.uses_gravity = true;
 
-    this.walkSpeed = 60;
-    this.climbSpeed = 40;
-    this.timeLastPath = 0;
+    this.walkSpeed = 20;
+    this.climbSpeed = 20;
 
     this.pos[0] = x;
     this.pos[1] = y;
@@ -94,7 +93,6 @@ Matchstick.prototype.handleCollisionWith = function(entity) {
 
     if (entity instanceof Piggy) {
         this.moveDir('stand');
-        this.current_path = null;
     }
 }
 
@@ -137,90 +135,59 @@ Matchstick.prototype.moveDir = function(dir) {
     this.setAnimation(dir);
 };
 
-Matchstick.prototype.doMovement = function() {
-    if (!this.game.ingame)
-        this.current_path = null
-
-    if ((this.current_path) && (this.current_path.length)) {
-        var target_pos = this.current_path[0];
-
-        if (target_pos != this.last_pos) {
-            this.last_pos = target_pos;
-        }
-
-        if ((this.pos[0] == target_pos[0]) && (this.pos[1] == target_pos[1])) {
-            this.current_path.shift();  
-        }
-        else {
-            switch(this.moving) {
-                default:
-                    if ((this.pos[1] > target_pos[1]) && (this.onLadder)) {
-                        // We're on a ladder and we can move up.
-                        this.moveDir('up');
-                    }
-                    else if ((this.pos[1] < target_pos[1]) && (this.onLadder)) {
-                        this.moveDir('down');
-                    }
-                    else if (this.pos[0] > target_pos[0]) {
-                        this.moveDir('left');
-                    }
-                    else if  (this.pos[0] < target_pos[0]) {
-                        this.moveDir('right');
-                    }
-                    break;
-                case 'left':
-                    if (this.pos[0] < target_pos[0]) {
-                        //this.setPos(target_pos);
-                        this.pos[0] = target_pos[0];
-                        this.current_path.shift();
-                        this.moveDir('stand');
-               
-                    }
-                    break;
-                case 'right':
-                    if (this.pos[0] > target_pos[0]) {
-                        //this.setPos(target_pos);
-                        this.pos[0] = target_pos[0];
-                        this.current_path.shift();
-                        this.moveDir('stand');
-               
-                    }
-                    break;                    
-                case 'up':
-                    if (this.pos[1] < target_pos[1]) {
-                        this.pos[1] = target_pos[1];
-                        this.current_path.shift();
-                        this.moveDir('stand');  
-                    }
-
-            }
-        }
-    }
-    else {
-        this.moveDir('stand');
-    }
-    if (this.falling) {
-        this.moveDir('fall');
-    }
-};
-
 Matchstick.prototype.chasePiggy = function() {
-    var now = Date.now();
-    if ((!this.timeLastPath) || (now > this.timeLastPath + 500 )) {
-        var piggy = this.game.entities['piggy'];
-        this.current_path = this.game.pathfinder.to(piggy.pos, this);
-        this.timeLastPath = now;
+    var piggy = this.game.entities['piggy'];
 
-        if (this.current_path.length > 10) {
-            // meh too far..
-            this.current_path = null;
+    if (this.inCenterOfLadder()) {
+        var yoffset = (this.collisionRect.bottom-1) - (piggy.collisionRect.bottom -1);
+        var ydiff = (this.pos[1] - piggy.pos[1]) + yoffset;
+
+        if ((ydiff > 0) && (this.isLadderAbove())) {
+            this.moveDir('up');
+            return;
+        }
+        else if ((ydiff < 0) && (this.isLadderBelow())) {
+            this.moveDir('down');
+            return;
         }
     }
+   
+    var xoffset = (this.collisionRect.right-1) - (piggy.collisionRect.right -1);
+    var xdiff = (this.pos[0] - piggy.pos[0]) + xoffset;
+    var xslack = 2;
+    if (xdiff + xslack < 0) {
+        this.moveDir('right');
+    }
+    else if (xdiff - xslack > 0) {
+        this.moveDir('left');
+    }
+    else this.moveDir('stand');
+    
 };
 
+Matchstick.prototype.inCenterOfLadder = function() {
+    if (this.onLadder) {
+        var ladderRect = this.onLadder.getCollisionRect();
+        var padding = 6;
+
+        var collisionRect = this.getCollisionRect();
+        if ((collisionRect.left - padding > ladderRect.left) && (collisionRect.right + padding < ladderRect.right))
+            return true;
+    }
+    return false;
+}
 
 Matchstick.prototype.canSeePiggy = function() {
-    return this.hasLOS(this.game.entities['piggy'], [13, 8]);
+    // Simply check to see if Piggy is close
+    var piggy = this.game.entities['piggy'];
+    return (this.posdiff(this.pos, piggy.pos) < 80);
+
+};
+
+Matchstick.prototype.posdiff = function(a, b) {
+    var x = Math.abs(b[0] -a[0]);
+    var y = Math.abs(b[1] -a[1]);
+    return x+y;
 };
 
 Matchstick.prototype.tick = function(time_delta) {
@@ -241,12 +208,13 @@ Matchstick.prototype.tick = function(time_delta) {
             this.moveDir('stand');
     }
 
-
-    if (this.canSeePiggy()) {
+    if (this.falling) {
+        this.moveDir('fall');
+    }
+    else if ((this.game.ingame) && (this.canSeePiggy())) {
         this.chasePiggy();
     }
-
-    this.doMovement();
+    else this.moveDir('stand');
 }
 
 Matchstick.prototype.isLadderAbove = function() {
@@ -254,6 +222,19 @@ Matchstick.prototype.isLadderAbove = function() {
     for (var i = 0; i < entities.length; i++) {
         if (entities[i] instanceof Ladder)
             return true;
+    }
+    return false;
+};
+
+Matchstick.prototype.isLadderBelow = function() {
+    entities = this.collidingEntitiesAt(this.pos[0], this.pos[1], false);
+
+    for (var i = 0; i < entities.length; i++) {
+        var entity = entities[i];
+        if (entity instanceof Ladder) {
+            if (entity.getCollisionRect().bottom > this.getCollisionRect().bottom)
+                return true;
+        }
     }
     return false;
 };

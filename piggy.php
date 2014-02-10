@@ -56,8 +56,7 @@ add_shortcode('piggy', function() {
         'js/game.js',
         'js/piggygame.js',
         'js/input.js',
-        'js/level.js',  
-        'js/pathfinder.js',        
+        'js/level.js',       
     );
     $output = '';
     foreach($scripts as $script) {

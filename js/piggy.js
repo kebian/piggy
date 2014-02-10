@@ -31,8 +31,8 @@ function Piggy(game, x, y) {
     this.pos[0] = x;
     this.pos[1] = y;
 
-    this.walkSpeed = 60;
-    this.climbSpeed = 40;
+    this.walkSpeed = 70;
+    this.climbSpeed = 70;
 
     this.walkingLeft = false;
     this.walkingRight = false;

@@ -66,34 +66,34 @@ PiggyGame.prototype.getResource = function(url) {
 
 PiggyGame.prototype.init = function(resources) {
     Game.prototype.init.call(this, resources);
-    var me = this;
     this.ingame = false;
     this.level.load('original', function() {
-        var piggy = me.entities['piggy'];
+        var game = this.game;
+        var piggy = game.entities['piggy'];
 
         piggy.onCollision = function(entity) {
             if (entity instanceof Matchstick) {
                 piggy.die();
             }
-            else if ((entity instanceof Kak) && (me.ingame)) {
+            else if ((entity instanceof Kak) && (game.ingame)) {
+                game.endGame();
                 console.log('Piggy reached the Kakacola!');
-                me.getResource('audio/burp.mp3').play();
-                me.ingame = false;
+                game.getResource('audio/burp.mp3').play();
                 window.setTimeout(function() {
-                    me.init();
+                    game.init();
                 }, 5000);
             }
            
         }
         piggy.onDead = function() {
             console.log('Game sees piggy has died.');
-            me.init();
+            game.init();
         }
 
-        me.input.onKeyPress = function() {
-            me.startGame();
+        game.input.onKeyPress = function() {
+            game.startGame();
         }
-        me.addEntity('title', new TitleScreen(me));
+        game.addEntity('title', new TitleScreen(game));
         console.log('Level loaded');
     });
 }
@@ -102,6 +102,12 @@ PiggyGame.prototype.init = function(resources) {
 PiggyGame.prototype.startGame = function() {
     this.ingame = true;
 };
+
+PiggyGame.prototype.endGame = function() {
+    this.ingame = false;
+    this.input.onKeyPress = null;
+}
+
 PiggyGame.prototype.tick = function(time_delta) {
     Game.prototype.tick.call(this, time_delta);
 }
@@ -126,7 +132,7 @@ PiggyGame.prototype.isEntityOnLadder = function(entity) {
     var entities = entity.collidingEntitiesAt(entity.pos[0], entity.pos[1], false);
     for (var i = 0; i < entities.length; i++) {
         if (entities[i] instanceof Ladder)
-            return true;
+            return entities[i];
     }
     return false;
 };

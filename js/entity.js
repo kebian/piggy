@@ -24,7 +24,7 @@ function Entity(game) {
     this.game = game;
     this.pos = [0, 0];
     this.force = [0, 0]; // in pixels per second
-    this.forceDelta;
+    this.forceDelta = [0, 0];
     this.collisionRect = {left: 0, right: 0, top: 0, bottom: 0}
     this.solid = false; // Prevents other solids moving through it.
     this.visible = false;
@@ -43,18 +43,32 @@ Entity.prototype.setPos = function(pos) {
 
 Entity.prototype.tick = function(time_delta) {
     if ((this.force[0]) || (this.force[1])) {
-        this.forceDelta += time_delta;
+        this.forceDelta[0] += time_delta;
+        this.forceDelta[1] += time_delta;
         var force = [];
-        force[0] = Math.round((this.force[0] / 1000) * time_delta);
-        force[1] = Math.round((this.force[1] / 1000) * time_delta);
+        force[0] = Math.round((this.force[0] / 1000) * this.forceDelta[0]);
+        force[1] = Math.round((this.force[1] / 1000) * this.forceDelta[1]);
+        if (force[0])
+            this.forceDelta[0] = 0;
+        if (force[1])
+            this.forceDelta[1] = 0;
+
         this.move(force[0], force[1]);
+
+        //if (this instanceof Piggy) {
+        //    console.log(force);
+        //}
 
         // We use a forceDelta to detect miniscule changes.  If the delta > 500ms
         // then we may as well reset it because that's plenty large enough.
-        if (this.forceDelta > 500) this.forceDelta = 0;
+        if (this.forceDelta[0] > 20) 
+            this.forceDelta[0] = 0;
+        if (this.forceDelta[1] > 20) 
+            this.forceDelta[1] = 0;
+
     }
     else
-        this.forceDelta = 0;
+        this.forceDelta = [0, 0];
 
     this.testCollision();
 }

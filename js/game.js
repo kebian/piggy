@@ -31,7 +31,6 @@ var Game = function(canvas) {
     this.force_x = 0;
     this.force_y = 0;
     this.resources = null;
-    this.pathfinder = new Pathfinder(this);
 }
 
 Game.prototype.addEntity = function(name, entity) {
