@@ -62,7 +62,7 @@ add_shortcode('piggy', function() {
     foreach($scripts as $script) {
         $output .= '<script src="' . $real_url($script) . '"></script>' . PHP_EOL;
     }
-    $output .= '<canvas id="piggy_canvas" tabindex="1"></canvas>' . PHP_EOL;
+    $output .= '<div class="piggy_game"><canvas id="piggy_canvas" tabindex="1"></canvas></div>' . PHP_EOL;
     $output .= <<< EOF
         <script type="text/javascript">
             var canvas = document.getElementById('piggy_canvas');
