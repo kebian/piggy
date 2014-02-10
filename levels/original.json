@@ -1,0 +1,191 @@
+[
+    {
+        "name": "piggy",
+        "type": "Piggy",
+        "x": 290,
+        "y": 89
+    },
+    {
+        "name": "kak",
+        "type": "Kak",
+        "x": 290,
+        "y": 1
+    },
+    {
+        "name": "baddy1",
+        "type": "Matchstick",
+        "x": 270,
+        "y": 31
+    },
+    {
+        "name": "baddy2",
+        "type": "Matchstick",
+        "x": 1,
+        "y": 1
+    },
+    {
+        "name": "floor-left",
+        "type": "Wall",
+        "left": 0,
+        "top": 174,
+        "right": 160,
+        "bottom": 174        
+    },
+    {
+        "name": "floor-wall",
+        "type": "Wall",
+        "left": 161,
+        "top": 158,
+        "right": 161,
+        "bottom": 174     
+    },
+    {
+        "name": "floor-right",
+        "type": "Wall",
+        "left": 162,
+        "top": 158,
+        "right": 319,
+        "bottom": 158       
+    },
+    {
+        "name": "wall-left",
+        "type": "Wall",
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 174      
+    },
+    {
+        "name": "wall-right",
+        "type": "Wall",
+        "left": 319,
+        "top": 0,
+        "right": 319,
+        "bottom": 157         
+    },
+    {
+        "name": "platform-topleft",
+        "type": "Wall",
+        "left": 1,
+        "top": 32,
+        "right": 84,
+        "bottom": 32        
+    },
+    {
+        "name": "platform-topright",
+        "type": "Wall",
+        "left": 111,
+        "top": 32,
+        "right": 223,
+        "bottom": 32      
+    },
+    {
+        "name": "ladder-top",
+        "type": "Ladder",
+        "left": 85,
+        "top": 32,
+        "right": 110,
+        "bottom": 65        
+    },
+    {
+        "name": "platform2-left",
+        "type": "Wall",
+        "left": 1,
+        "top": 66,
+        "right": 27,
+        "bottom": 66       
+    },
+    {
+        "name": "platform2-middle",
+        "type": "Wall",
+        "left": 54,
+        "top": 66,
+        "right": 174,
+        "bottom": 66      
+    },
+    {
+        "name": "platform2-right",
+        "type": "Wall",
+        "left": 201,
+        "top": 66,
+        "right": 319,
+        "bottom": 66 
+    },
+    {
+        "name": "platform2-wall",
+        "type": "Wall",
+        "left": 156,
+        "top": 33,
+        "right": 156,
+        "bottom": 65       
+    },
+    {
+        "name": "ladder-bigleft",
+        "type": "Ladder",
+        "left": 28,
+        "top": 66,
+        "right": 53,
+        "bottom": 173
+    },    
+    {
+        "name": "platform3",
+        "type": "Wall",
+        "left": 105,
+        "top": 100,
+        "right": 222,
+        "bottom": 100
+    },
+    {
+        "name": "ladder-platform3",
+        "type": "Ladder",
+        "left": 175,
+        "top": 66,
+        "right": 200,
+        "bottom": 99
+    },       
+    {
+        "name": "platform4-left",
+        "type": "Wall",
+        "left": 1,
+        "top": 122,
+        "right": 27,
+        "bottom": 122
+    },
+    {
+        "name": "platform4-right",
+        "type": "Wall",
+        "left": 54,
+        "top": 122,
+        "right": 76,
+        "bottom": 122
+    },  
+    {
+        "name": "platform5-left",
+        "type": "Wall",
+        "left": 249,
+        "top": 120,
+        "right": 264,
+        "bottom": 120
+    }, 
+    {
+        "name": "platform5-right",
+        "type": "Wall",
+        "left": 291,
+        "top": 120,
+        "right": 319,
+        "bottom": 120
+    },
+    {
+        "name": "ladder-platform5",
+        "type": "Ladder",
+        "left": 265,
+        "top": 120,
+        "right": 290,
+        "bottom": 157
+    },                
+    {
+        "name": "background", 
+        "type": "Background",
+        "img": "img/level1.png"
+    }
+]
