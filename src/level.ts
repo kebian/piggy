@@ -1,24 +1,64 @@
+import Background from "./background";
+import Kak from "./kak";
+import Ladder from "./ladder";
+import Matchstick from "./matchstick";
+import Piggy from "./piggy";
+import PiggyGame from "./piggygame";
+import Wall from "./wall";
+
+class Level {
+    game: PiggyGame
+
+    constructor (game: PiggyGame) {
+        this.game = game
+    }
+
+    async load(name: string) {
+        const json = await import(this.game.resPath('levels/' + name + '.json'))
+        this.loadFromData(json)
+    }
+
+    private loadFromData(data: any) {
+        this.game.clearEntities()
+
+        for (const e of data) {
+            switch(e.type) {
+                case 'Background':
+                    this.game.addEntity(e.name, new Background(this.game, this.game.resPath(e.img)))
+                    break
+                case 'Wall':
+                    this.game.addEntity(e.name, new Wall(this.game, {
+                        left: e.left,
+                        right: e.right,
+                        top: e.top,
+                        bottom: e.bottom
+                    }))
+                    break
+                case 'Ladder':
+                    this.game.addEntity(e.name, new Ladder(this.game, {
+                        left: e.left,
+                        right: e.right,
+                        top: e.top,
+                        bottom: e.bottom    
+                    }))
+                    break
+                case 'Piggy':
+                    this.game.addEntity(e.name, new Piggy(this.game, { x: e.x, y: e.y }))
+                    break
+                case 'Matchstick':
+                    this.game.addEntity(e.name, new Matchstick(this.game, { x: e.x, y: e.y }))
+                    break
+                case 'Kak':
+                    this.game.addEntity(e.name, new Kak(this.game, { x: e.x, y: e.y }))
+                    break
+            }
+        }
+    }
+}
+
+export default Level
+
 /*
-Copyright (c) 2014 Rob Stiles
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
 
 function Level(game) {
     this.game = game;
@@ -82,3 +122,4 @@ Level.prototype.loadJSON = function(file, callback) {
     };
     xobj.send(null);  
 }
+*/
