@@ -16,6 +16,7 @@ class Wall extends Entity {
         ctx.fillStyle="#ff0000";
         ctx.fillRect(rect.left, rect.top, rect.right - rect.left +1, rect.bottom - rect.top +1);    
     }
+
 }
 
 export default Wall

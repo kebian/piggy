@@ -20,20 +20,19 @@ class Input extends EventEmitter<Events> {
         document.addEventListener('keydown', e => {
             this.handleKeyEvent(e, 'down')
             this.emit('keypress', e)
-            if (document.activeElement == this.game.canvas)
+            if (document.activeElement === this.game.canvas)
                 e.preventDefault();
         })
         
         document.addEventListener('keyup', e => {
             this.handleKeyEvent(e, 'up')
-            if (document.activeElement == this.game.canvas)
+            if (document.activeElement === this.game.canvas)
                 e.preventDefault();
         })
     
         window.addEventListener('blur',e => {
             this.keys.clear()
         })
-
     }
 
     private handleKeyEvent(e: KeyboardEvent, state: KeyState) {

@@ -14,11 +14,12 @@ class Level {
     }
 
     async load(name: string) {
-        const json = await import(this.game.resPath('levels/' + name + '.json'))
+        //const json = await import(this.game.resPath('levels/' + name + '.json'))
+        const json = await fetch(this.game.resPath('levels/' + name + '.json'))
         this.loadFromData(json)
     }
 
-    private loadFromData(data: any) {
+    public loadFromData(data: any) {
         this.game.clearEntities()
 
         for (const e of data) {

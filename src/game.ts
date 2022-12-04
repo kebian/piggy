@@ -9,9 +9,10 @@ class Game {
     protected context2d: CanvasRenderingContext2D
     private entityRenderOrder: Entity[]
     public input: Input
-    protected environmentalforces: PairXY
+    protected gravityForce: PairXY
     private resourceCache: ResourceCache // might not need this now
-    private entityMap: Map<string, Entity>
+    protected entityMap: Map<string, Entity>
+    private gravityApplied: Map<Entity, boolean>
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvasEl = canvas
@@ -22,7 +23,8 @@ class Game {
         this.entityMap = new Map()
         this.entityRenderOrder = []
         this.input = new Input(this)
-        this.environmentalforces = { x: 0, y: 0 }
+        this.gravityForce = { x: 0, y: 0 }
+        this.gravityApplied = new Map()
         this.resourceCache = new ResourceCache()
     }
 
@@ -58,7 +60,7 @@ class Game {
 
     private recalcRenderOrder() {
         // Calculate the render order based on the zorder of the entities
-        this.entityRenderOrder = Array.from(this.entityMap.values()).sort((a, b) => b.zorder - a.zorder)
+        this.entityRenderOrder = Array.from(this.entityMap.values()).sort((a, b) => a.zorder - b.zorder)
     }
 
     protected requestResources() {
@@ -96,21 +98,36 @@ class Game {
         this.requestAnimFrame();
     }
 
-  
     protected tick(timeDelta: number) {
-        for (const [name, entity] of this.entityMap.entries()) {
-            //this.entityTick(entity, name, timeDelta) // Why do we call this and the one below?
-            this.applyEnvironmentalForces(entity)
+        for (const entity of this.entityMap.values()) {
+            this.checkGravityFor(entity)
             entity.tick(timeDelta)
         }
     }
 
-    protected applyEnvironmentalForces(entity: Entity) {
-        if (entity.usesGravity) entity.applyForce(this.environmentalforces)
+    protected checkGravityFor(entity: Entity) {
+        if (entity.usesGravity && !this.gravityAppliedTo(entity)) this.applyGravityTo(entity)
+        else if (!entity.usesGravity && this.gravityAppliedTo(entity)) this.removeGravityFrom(entity)
+    }
+
+    protected gravityAppliedTo(entity: Entity) {
+        return this.gravityApplied.get(entity) === true
+    }
+
+    protected applyGravityTo(entity: Entity) {
+        if (this.gravityAppliedTo(entity)) return
+        entity.applyForce(this.gravityForce)
+        this.gravityApplied.set(entity, true)
+    }
+
+    protected removeGravityFrom(entity: Entity) {
+        if (!this.gravityAppliedTo(entity)) return
+        entity.applyReverseForce(this.gravityForce)
+        this.gravityApplied.delete(entity)
     }
 
     protected render() {
-        for (const entity of this.entityMap.values()) {
+        for (const entity of this.entityRenderOrder) {
             if (entity.visible) entity.render(this.context2d)
         }
     }

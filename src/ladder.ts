@@ -4,24 +4,21 @@ import Game from "./game";
 
 
 class Ladder extends Entity {
-    private rect: Rect
 
     constructor(game: Game, rect: Rect) {
         super(game)
-        this.rect = rect
-        //this.visible = true
-    }
-
-    getCollisionRect(): Rect {
-        return this.rect
+        this._collisionRect = { ...rect }
+        this.zorder = -1
+        this.visible = true
+        this.solid = false
     }
 
     render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle="#00ff00";
-        ctx.fillRect(this.rect.left,
-            this.rect.top,
-            this.rect.right - this.rect.left +1,
-            this.rect.bottom - this.rect.top +1
+        ctx.fillRect(this.collisionRect.left,
+            this.collisionRect.top,
+            this.collisionRect.right - this.collisionRect.left +1,
+            this.collisionRect.bottom - this.collisionRect.top +1
         )
     }
 }

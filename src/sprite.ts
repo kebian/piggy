@@ -36,7 +36,7 @@ class Sprite extends Entity {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        if (!this.currentAnimation || !this.currentFrame) return
+        if (!this.currentAnimation || this.currentFrame === undefined) return
 
         const row = Math.floor(this.currentFrame / this.framesPerRow)
         const col = this.currentFrame % this.framesPerRow

@@ -12,7 +12,7 @@ class Entity {
     protected game: Game
     protected _position: PairXY
     protected force: PairXY
-    protected forceDelta: PairXY
+    protected smallForces: PairXY
     protected _collisionRect: Rect
     public solid: boolean // prevents other solids from moving through it
     public visible: boolean
@@ -25,7 +25,7 @@ class Entity {
         this.game = game
         this._position = { x: 0, y: 0 }
         this.force = { x: 0, y: 0 }
-        this.forceDelta = { x: 0, y: 0 }
+        this.smallForces = { x: 0, y: 0 }
         this._collisionRect = { top: 0, left: 0, bottom: 0, right: 0}
         this.solid = false
         this.visible = false
@@ -46,31 +46,45 @@ class Entity {
     }
 
     tick(timeDelta: number) {
-        if ((this.force.x) || (this.force.y)) {
-            this.forceDelta.x += timeDelta;
-            this.forceDelta.y += timeDelta;
+        this.tickForces(timeDelta)
+        this.testCollision()
+    }
 
-            const force: PairXY = {
-                x: Math.round((this.force.x / 1000) * this.forceDelta.x),
-                y: Math.round((this.force.y / 1000) * this.forceDelta.y)
-            }
+    /**
+     * Force is in pixels per second.  Often the move offset is less than
+     * 1 pixel, so we accumulate the fractional forces and apply them when
+     * they reach at least one pixel.  Without this, the sprites would
+     * hardly ever move.
+     * @param timeDelta 
+     */
+    private tickForces(timeDelta: number) {
+        if (timeDelta === 0) return // No time has passed!
 
-            if (force.x) this.forceDelta.x = 0
-            if (force.y) this.forceDelta.y = 0
-    
-            this.move(force);
-    
-            // We use a forceDelta to detect miniscule changes.  If the delta > 500ms
-            // then we may as well reset it because that's plenty large enough.
-            if (this.forceDelta.x > 20) 
-                this.forceDelta.x = 0;
-            if (this.forceDelta.y > 20) 
-                this.forceDelta.y = 0;
-    
+        if (!this.force.x && !this.force.y) {
+            this.smallForces = {x: 0, y: 0}
+            return
         }
-        else this.forceDelta = {x: 0, y: 0}
-    
-        this.testCollision();
+
+        const deltaRatio = timeDelta / 1000
+
+        const pixelsToMove: PairXY = {
+            x: (this.force.x * deltaRatio) + this.smallForces.x,
+            y: (this.force.y * deltaRatio) + this.smallForces.y,
+        }
+
+        // We can only move by whole pixels so save off the fractional
+        // amounts for next time.
+        this.smallForces = {
+            x: pixelsToMove.x % 1,
+            y: pixelsToMove.y % 1,
+        }
+                    
+        // move by whole pixels
+        this.moveByOffset({
+            x: pixelsToMove.x - this.smallForces.x,
+            y: pixelsToMove.y - this.smallForces.y
+        })
+        
     }
 
     /**
@@ -88,6 +102,14 @@ class Entity {
             top: this._collisionRect.top + pos.y,
             bottom: this._collisionRect.bottom + pos.y,
         }
+    }
+
+    get centerPos() {
+        const rect = this.collisionRect
+        return {
+            x: rect.left + Math.floor(rect.right - rect.left),
+            y: rect.top + Math.floor(rect.bottom - rect.top)
+        } as PairXY
     }
 
     protected handleCollisionWith(other: Entity) {
@@ -151,7 +173,7 @@ class Entity {
     }
 
     collidingEntities(solidsOnly: boolean = false) {
-        return this.collidingEntitiesAt(this._position, solidsOnly)
+        return this.collidingEntitiesAt(this.position, solidsOnly)
     }
 
     isColliding(solidsOnly: boolean) {
@@ -165,6 +187,11 @@ class Entity {
     applyForce(force: PairXY) {
         this.force.x += force.x
         this.force.y += force.y
+    }
+
+    applyReverseForce(force: PairXY) {
+        this.force.x -= force.x
+        this.force.y -= force.y
     }
 
     resetForce() {
@@ -187,7 +214,12 @@ class Entity {
         return newY
     }
 
-    move(offset: PairXY) {
+
+    private moveByOffset(offset: PairXY) {
+        this.position = this.positionAfterCollisions(offset)
+    }
+
+    protected positionAfterCollisions(offset: PairXY) {
         const newPosition: PairXY = {
             x: this._position.x + offset.x,
             y: this._position.y + offset.y
@@ -221,7 +253,7 @@ class Entity {
                     }, newPosition.y)
             }
         }
-        this.position = newPosition
+        return newPosition
     }
 
     // TypeScript makes it very difficult / impossible to extend from classes that extend

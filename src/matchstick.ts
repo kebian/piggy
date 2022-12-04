@@ -12,7 +12,7 @@ class Matchstick extends Sprite {
     private walkSpeed: number
     private climbSpeed: number
     private falling: boolean
-    private moveDirection: MoveDirection
+    private _moveDirection: MoveDirection
     constructor(game: PiggyGame, position: PairXY) {
         super(game, game.resPath('img/sprites.png'), { x: 0, y: 48 }, { x: 28, y: 29 }, 26)
         this.solid = true
@@ -28,77 +28,83 @@ class Matchstick extends Sprite {
         this.addAnimation({ name: 'fall', sequence: new FrameSequence({ frames: [14, 15], fps: 10, repeat: true })})
         this.addAnimation({ name: 'right', sequence: new FrameSequence({ frames: [8, 9, 10, 11, 12, 13], fps: 10, repeat: true })})
         this.addAnimation({ name: 'left', sequence: new FrameSequence({ frames: [5, 4, 3, 2, 1, 0], fps: 10, repeat: true })})
-        this.moveDirection = 'stand'
+        this._moveDirection = 'stand'
     }
 
     protected handleCollisionWith(other: Entity): void {
         super.handleCollisionWith(other)
 
-        if (other instanceof Piggy) this.moveDir('stand')
+        if (other instanceof Piggy) this.moveDirection = 'stand'
     }
 
-    private moveDir(dir: MoveDirection)  {
-        if (this.moveDirection === dir) return // Already doing that
+    get moveDirection() {
+        return this._moveDirection
+    }
+
+    private set moveDirection(newDirection: MoveDirection) {
+        if (this.moveDirection === newDirection) return // Already doing that
+
+        const walkForce: PairXY = { x: this.walkSpeed, y: 0}
+        const climbForce: PairXY = { x: 0, y: -this.climbSpeed }
 
         // Unapply all movement forces
         switch(this.moveDirection) {
             case 'right':
-                this.applyForce({ x: -this.walkSpeed, y: 0 })
+                this.applyReverseForce(walkForce)
                 break
             case 'left':
-                this.applyForce({ x: this.walkSpeed, y: 0 })
+                this.applyForce(walkForce)
                 break
             case 'up':
-                this.applyForce({ x: 0, y: this.climbSpeed })
+                this.applyReverseForce(climbForce)
                 break
             case 'down':
-                this.applyForce({ x: 0, y: -this.climbSpeed})
+                this.applyForce(climbForce)
                 break
         }
 
-        switch(dir) {
+        // apply new forces
+        switch(newDirection) {
             case 'right':
-                this.applyForce({ x: this.walkSpeed, y: 0 });
+                this.applyForce(walkForce);
                 break;
             case 'left':
-                this.applyForce({ x: -this.walkSpeed, y: 0 });
+                this.applyReverseForce(walkForce)
                 break;
             case 'up':
-                this.applyForce({ x: 0, y: -this.climbSpeed });
+                this.applyForce(climbForce);
                 break;
             case 'down':
-                this.applyForce({ x: 0, y: this.climbSpeed });
+                this.applyReverseForce(climbForce)
                 break;
             case 'fall':
                 break;   
         }
 
-        this.moveDirection = dir
-        this.setAnimation(dir)
+        this._moveDirection = newDirection
+        this.setAnimation(newDirection)
     }
 
     private chasePiggy() {
         const piggy = this.game.entityByName('piggy')
         if (piggy === undefined) throw new Error("Can't find piggy entity")
         if (this.inCenterOfLadder) {
-            const yOffset = (this._collisionRect.bottom - 1) - (piggy.collisionRect.bottom - 1)
-            const yDiff = (this._position.y - piggy.position.y) + yOffset
+            const yDiff = this.collisionRect.bottom - piggy.collisionRect.bottom
             if (yDiff > 0 && this.isLadderAbove) {
-                this.moveDir('up')
+                this.moveDirection = 'up'
                 return
             }
             else if (yDiff < 0 && this.isLadderBelow) {
-                this.moveDir('down')
+                this.moveDirection = 'down'
                 return
             }
         }
 
-        const xOffset = (this._collisionRect.right -1) - (piggy.collisionRect.right - 1)
-        const xDiff = (this._position.x - piggy.position.x) + xOffset
-        const xSlack = 2
-        if (xDiff + xSlack < 0) this.moveDir('right')
-        else if (xDiff - xSlack > 0) this.moveDir('left')
-        else this.moveDir('stand')
+        const xDiff = this.centerPos.x - piggy.centerPos.x
+        const xSlack = 2 // stops it twitching if it's above / below
+        if (xDiff + xSlack < 0) this.moveDirection = 'right'
+        else if (xDiff - xSlack > 0) this.moveDirection = 'left'
+        else this.moveDirection = 'stand'
     }
 
     get onLadder() {
@@ -132,20 +138,18 @@ class Matchstick extends Sprite {
     public tick(timeDelta: number): void {
         super.tick(timeDelta)
 
-        if (!this.isLadderAbove && this.onLadder && this.force.y < 0) this.moveDir('stand')
+        if (!this.isLadderAbove && this.onLadder && this.force.y < 0) this.moveDirection = 'stand'
         
         if (!this.isColliding(false) && !this.onLadder) {
             this.falling = true
-            this.setAnimation('fall')
+            this.moveDirection = 'fall'
+            return
         }
-        else {
-            this.falling = false
-            if (this.animation?.name === 'fall') this.moveDir('stand')
-        }
-
-        if (this.falling) this.moveDir('fall')
-        else if ((this.game as PiggyGame).ingame && this.canSeePiggy) this.chasePiggy()
-        else this.moveDir('stand')
+        
+        this.falling = false
+        
+        if ((this.game as PiggyGame).ingame && this.canSeePiggy) this.chasePiggy()
+        else this.moveDirection = 'stand'
     }
 
     private get isLadderAbove() {

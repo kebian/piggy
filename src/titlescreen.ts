@@ -17,7 +17,7 @@ class TitleScreen extends Background {
         super.tick(timeDelta)
         const piggyGame = this.game as PiggyGame
         if (!piggyGame.ingame) this.alpha = 1
-        else if (this.alpha > 0) this.alpha -= timeDelta // TODO: was decreasing by 0.05 per frame
+        else if (this.alpha > 0) this.alpha -= (timeDelta / 500)
     }
     
     render(ctx: CanvasRenderingContext2D): void {

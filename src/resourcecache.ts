@@ -29,6 +29,7 @@ class ResourceCache extends EventEmitter<Events>{
     }
 
     private loadSingleResource(url: string) {
+        console.log('loadSingleResource', url)
         return new Promise<Resource>((resolve, reject) => {
             // Check to see if it's already loaded
             const existing = this.cache.get(url)
@@ -46,6 +47,8 @@ class ResourceCache extends EventEmitter<Events>{
                     image.onload = () => {
                         const resource: ImageResource = { type: 'image', image }
                         this.cache.set(url, resource)
+                        console.log('loaded', url)
+                        image.onload = null
                         resolve(resource)
                     }
                     image.onerror = e => reject(e)
@@ -53,9 +56,11 @@ class ResourceCache extends EventEmitter<Events>{
                     break
                 case 'mp3':
                     const audio = new Audio()
-                    audio.onload = () => {
+                    audio.oncanplay = () => {
                         const resource : AudioResource = { type: 'audio', audio }
                         this.cache.set(url, resource)
+                        console.log('loaded', url)
+                        audio.oncanplay = null
                         resolve(resource)
                     }
                     audio.onerror = e => reject(e)

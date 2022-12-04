@@ -10,7 +10,7 @@ class Background extends Entity {
         super(game)
         this.imageUrl = imageUrl
         this.visible = true
-        this.zorder =- 1
+        this.zorder =- 2
     }
 
     render(ctx: CanvasRenderingContext2D): void {

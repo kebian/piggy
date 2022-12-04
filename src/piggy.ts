@@ -17,9 +17,9 @@ interface PiggyEvents extends EntityEvents {
 class Piggy extends Sprite {
     private walkSpeed: number
     private climbSpeed: number
-    private walkDirection: WalkDirection
-    private climbDirection: ClimbDirection
-    private falling: boolean
+    private _walkDirection: WalkDirection
+    private _climbDirection: ClimbDirection
+    private _falling: boolean
     private dead: boolean
     private sounds: {
         footsteps: AudioResource['audio'],
@@ -33,11 +33,11 @@ class Piggy extends Sprite {
         this.solid = true
         this.usesGravity = true
         this.position = position
-        this.walkSpeed = 70
-        this.climbSpeed = 70
-        this.walkDirection = 'none'
-        this.climbDirection = 'none'
-        this.falling = false
+        this.walkSpeed = 90
+        this.climbSpeed = 90
+        this._walkDirection = 'none'
+        this._climbDirection = 'none'
+        this._falling = false
         this.dead = false
         this._collisionRect = { left: 7, top: 1, right: 17, bottom: 22 }
 
@@ -87,9 +87,19 @@ class Piggy extends Sprite {
             fire: game.getAudioResource('audio/fire.mp3').audio
         }
         this.sounds.footsteps.volume = 0.1;
-
+        this.sounds.footsteps.loop = true
     }
 
+    get falling() {
+        return this._falling
+    }
+
+    set falling(newVal: boolean) {
+        if (newVal === this._falling) return
+        if (newVal) this.setAnimation('fall')
+        else this.setAnimation('stand')
+        this._falling = newVal
+    }
 
     emit<K extends EntityEventKey<PiggyEvents>>(eventName: K, ...params: Parameters<PiggyEvents[K]>) {
         return this._emit(eventName, ...params)
@@ -107,12 +117,86 @@ class Piggy extends Sprite {
         return this._removeAllListeners(eventName)
     }
 
+    get walkDirection() {
+        return this._walkDirection
+    }
+
+    set walkDirection(newDirection: WalkDirection) {
+        if (newDirection === this._walkDirection) return
+
+        const walkForce: PairXY = { x: this.walkSpeed, y: 0 }
+
+        // unset existing forces
+        if (this._walkDirection === 'left') this.applyForce(walkForce)
+        else if (this._walkDirection === 'right') this.applyReverseForce(walkForce)
+
+        // set new forces
+        if (newDirection === 'left') this.applyReverseForce(walkForce)
+        else if (newDirection === 'right') this.applyForce(walkForce)
+    
+
+        /*
+        if (this.climbDirection === 'none' && !this.falling) {
+            if (newDirection === 'left') this.setAnimation('left')
+            else if (newDirection === 'right') this.setAnimation('right')
+            else this.setAnimation('stand')
+        }
+        */
+        this.footsteps(newDirection === 'left' || newDirection === 'right')
+        this._walkDirection = newDirection
+
+        // set animations
+        this.determineMovementAnimation()
+    }
+
+    private determineMovementAnimation() {
+        let animation = 'stand'
+        if (this.falling) animation = 'fall'
+
+        else if (this.climbDirection === 'up') animation = 'climb-up'
+        else if (this.climbDirection === 'down') animation = 'climb-down'
+        else if (this.walkDirection === 'left') animation = 'left'
+        else if (this.walkDirection === 'right') animation = 'right'
+        this.setAnimation(animation)
+    }
+
+    get climbDirection() {
+        return this._climbDirection
+    }
+
+    set climbDirection(newDirection: ClimbDirection) {
+        if (newDirection === this._climbDirection) return
+
+        const climbForce: PairXY = { x: 0, y: -this.climbSpeed}
+
+        // unset existing forces
+        if (this._climbDirection === 'up') this.applyReverseForce(climbForce)
+        else if (this._climbDirection === 'down') this.applyForce(climbForce)
+
+        // set new forces
+        if (newDirection === 'up') this.applyForce(climbForce)
+        else if (newDirection === 'down') this.applyReverseForce(climbForce)
+
+        // set animations
+        /*
+        if (newDirection === 'up') this.setAnimation('climb-up')
+        else if (newDirection === 'down') this.setAnimation('climb-down')
+        else if (newDirection === 'none') this.setAnimation('stand')
+        */
+        
+
+        this._climbDirection = newDirection
+
+        this.determineMovementAnimation()
+    }
+
     private footsteps(play: boolean) {
         if (play) this.sounds.footsteps.play()
         else this.sounds.footsteps.pause()
     }
 
     public die() {
+        if (this.dead === true) return // already dead
         this.dead = true
         this.setAnimation('fire')
         this.sounds.fire.play()
@@ -122,21 +206,28 @@ class Piggy extends Sprite {
         super.tick(timeDelta)
         if (this.dead) return
 
-        if (!this.isColliding && !this.piggyGame.isEntityOnLadder(this)) {
-            this.falling = true
-            this.setAnimation('fall')
-        }
+        // fall if not even colliding with floor
+        if (!this.isColliding(false) && !this.piggyGame.isEntityOnLadder(this)) this.falling = true
         else this.falling = false
 
         this.handleInput()
     }
 
+    get canWalkLeft()
+    {
+        return (this.positionAfterCollisions({ x: -1, y: 0}).x !== this.position.x)
+    }
+
+    get canWalkRight()
+    {
+        return (this.positionAfterCollisions({ x: +1, y: 0}).x !== this.position.x)
+    }
+
     get isLadderAbove() {
         return this.collidingEntitiesAt({ x: this._position.x, y: this._position.y -1}, false)
             .some(entity => entity instanceof Ladder)
-    };
+    }
     
-
     private handleInput() {
         if (!this.piggyGame.ingame) {
             this.footsteps(false)
@@ -146,78 +237,38 @@ class Piggy extends Sprite {
 
         if (this.falling) {
             // We're falling.  Don't allow steering in the air.
-            if (this.walkDirection === 'left') this.applyForce({ x: this.walkSpeed, y: 0 })
-            if (this.walkDirection === 'right') this.applyForce({ x: -this.walkSpeed, y: 0 })
             this.walkDirection = 'none'
             
             // And if we're falling, we can't be climbing
-            if (this.climbDirection === 'up') this.applyForce( { x: 0, y: this.climbSpeed })
-            if (this.climbDirection === 'down') this.applyForce( { x: 0, y: -this.climbSpeed })
             this.climbDirection = 'none'
         }
         else {
-            if (this.game.input.keyIsDown('LEFT') && this.walkDirection !== 'left') {
-                this.walkDirection = 'left'
-                if (this.climbDirection === 'none') this.setAnimation('left')
-                this.applyForce({ x: -this.walkSpeed, y: 0})
-            }
-            else if (this.walkDirection === 'left') {
-                this.walkDirection = 'none'
-                this.applyForce({ x: this.walkSpeed, y: 0 })
-            }
-
-            if (this.game.input.keyIsDown('RIGHT') && this.walkDirection !== 'right') {
-                this.walkDirection = 'right'
-                if (this.climbDirection === 'none') this.setAnimation('right')
-                this.applyForce({ x: this.walkSpeed, y: 0 })
-            }
-            else if (this.walkDirection === 'right') {
-                this.walkDirection = 'none'
-                this.applyForce({ x: -this.walkSpeed, y: 0 })
-            }
-
             const onLadder = this.piggyGame.isEntityOnLadder(this)
 
-            if (this.game.input.keyIsDown('UP') && onLadder && this.isLadderAbove && this.climbDirection !== 'up') {
-                this.climbDirection = 'up'
-                this.setAnimation('climb-up')
-                this.applyForce({ x: 0, y: -this.climbSpeed })
+            if (this.game.input.keyIsDown('LEFT')) {
+                if (this.walkDirection !== 'left') this.walkDirection = 'left'
             }
-            else if (this.climbDirection === 'up') {
-                this.climbDirection = 'none'
-                this.applyForce({ x: 0, y: this.climbSpeed })
+            else if (this.walkDirection === 'left') this.walkDirection = 'none'
+                
+            if (this.game.input.keyIsDown('RIGHT')) {
+                if (this.walkDirection !== 'right') this.walkDirection = 'right'
             }
-    
-            if (this.game.input.keyIsDown('DOWN') && onLadder && this.climbDirection !== 'down') {
-                this.climbDirection = 'down'
-                this.setAnimation('climb-down')
-                this.applyForce({ x: 0, y: this.climbSpeed })
+            else if (this.walkDirection === 'right') this.walkDirection = 'none'
+                
+            if (this.game.input.keyIsDown('UP') && onLadder && this.isLadderAbove) { 
+                if (this.climbDirection !== 'up') this.climbDirection = 'up'
+                
             }
-            else if (this.climbDirection === 'down') {
-                this.climbDirection = 'none'
-                this.applyForce({ x: 0, y: -this.climbSpeed })
+            else if (this.climbDirection === 'up') this.climbDirection = 'none'
+        
+            if (this.game.input.keyIsDown('DOWN') && onLadder) {
+                if (this.climbDirection !== 'down') this.climbDirection = 'down'
             }
+            else if (this.climbDirection === 'down') this.climbDirection = 'none'
 
-            /*
-            // Stop him doing a climbing animation when not on a ladder
-            if ((!this.onLadder) && (('climb-up' == this.getAnimation()) || ('climb-down' == this.getAnimation()))) {
-                if (this.walkingLeft) this.setAnimation('left');
-                else if (this.walkingRight) this.setAnimation('right');
-            }
-            
-            // Prevent moonwalking
-            if (('left' == this.getAnimation()) && (this.walkingRight))
-                this.setAnimation('left');
-            else if (('right' == this.getAnimation()) && (this.walkingLeft))
-                this.setAnimation('right');
-    
-            if ((!this.walkingLeft) && (!this.walkingRight) && (!this.climbingUp) && (!this.climbingDown))
-                this.setAnimation('stand');
-            */
-
-            if (this.walkDirection === 'none' && this.climbDirection === 'none') this.setAnimation('stand')
-        }
-        this.footsteps(this.walkDirection === 'left' || this.walkDirection === 'right')
+            if (this.walkDirection === 'left' && !this.canWalkLeft) this.walkDirection = 'none'
+            if (this.walkDirection === 'right' && !this.canWalkRight) this.walkDirection = 'none'            
+        }        
     }
 }
 
