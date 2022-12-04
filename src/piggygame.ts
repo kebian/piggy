@@ -25,7 +25,7 @@ class PiggyGame extends Game {
         this.gravityForce = { x: 0, y: 100} // gravity
         this.level = new Level(this)
         this.resourceRootPath = resourceRootPath
-        //if (!this.resourceRootPath.endsWith('/')) this.resourceRootPath += '/'
+        if (resourceRootPath !== '' && !this.resourceRootPath.endsWith('/')) this.resourceRootPath += '/'
     }
 
     get ingame() {

@@ -33,8 +33,8 @@ class Piggy extends Sprite {
         this.solid = true
         this.usesGravity = true
         this.position = position
-        this.walkSpeed = 90
-        this.climbSpeed = 90
+        this.walkSpeed = 100
+        this.climbSpeed = 100
         this._walkDirection = 'none'
         this._climbDirection = 'none'
         this._falling = false
@@ -213,16 +213,6 @@ class Piggy extends Sprite {
         this.handleInput()
     }
 
-    get canWalkLeft()
-    {
-        return (this.positionAfterCollisions({ x: -1, y: 0}).x !== this.position.x)
-    }
-
-    get canWalkRight()
-    {
-        return (this.positionAfterCollisions({ x: +1, y: 0}).x !== this.position.x)
-    }
-
     get isLadderAbove() {
         return this.collidingEntitiesAt({ x: this._position.x, y: this._position.y -1}, false)
             .some(entity => entity instanceof Ladder)
@@ -266,8 +256,8 @@ class Piggy extends Sprite {
             }
             else if (this.climbDirection === 'down') this.climbDirection = 'none'
 
-            if (this.walkDirection === 'left' && !this.canWalkLeft) this.walkDirection = 'none'
-            if (this.walkDirection === 'right' && !this.canWalkRight) this.walkDirection = 'none'            
+            if (this.walkDirection === 'left' && !this.canMoveLeft) this.walkDirection = 'none'
+            if (this.walkDirection === 'right' && !this.canMoveRight) this.walkDirection = 'none'            
         }        
     }
 }

@@ -8,7 +8,7 @@ class Wall extends Entity {
         super(game)
         this._collisionRect = {... rect}
         this.solid = true
-        this.visible = true
+        this.visible = false
     }
 
     render(ctx: CanvasRenderingContext2D): void {

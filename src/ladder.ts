@@ -9,7 +9,7 @@ class Ladder extends Entity {
         super(game)
         this._collisionRect = { ...rect }
         this.zorder = -1
-        this.visible = true
+        this.visible = false
         this.solid = false
     }
 

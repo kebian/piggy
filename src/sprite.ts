@@ -41,11 +41,12 @@ class Sprite extends Entity {
         const row = Math.floor(this.currentFrame / this.framesPerRow)
         const col = this.currentFrame % this.framesPerRow
 
+        /*
         // Temporarily render collision rect
         const cr = this.collisionRect;
         ctx.fillStyle="blue";
         ctx.fillRect(cr.left, cr.top, cr.right - cr.left +1, cr.bottom - cr.top +1);
-    
+        */
         ctx.drawImage(
             this.sheet, this.sheetPos.x + (col * this.size.x), 
             this.sheetPos.y + (row * this.size.y),
@@ -56,6 +57,7 @@ class Sprite extends Entity {
             this.size.x,
             this.size.y
         )
+        
     }
 
     addAnimation(animation: Animation) {
@@ -84,6 +86,14 @@ class Sprite extends Entity {
     public tick(timeDelta: number) {
         super.tick(timeDelta)
         this.currentAnimation?.sequence.tick(timeDelta)
+    }
+
+    get canMoveLeft() {
+        return (this.positionAfterCollisions({ x: -1, y: 0}).x !== this.position.x)
+    }
+
+    get canMoveRight() {
+        return (this.positionAfterCollisions({ x: +1, y: 0}).x !== this.position.x)
     }
 }
 

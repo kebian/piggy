@@ -21,7 +21,7 @@ class Matchstick extends Sprite {
         this.walkSpeed = 20
         this.climbSpeed = 20
         this.position = position
-        this._collisionRect = { left: 14, top: 1, right: 16, bottom: 28 }
+        this._collisionRect = { left: 12, top: 1, right: 15, bottom: 28 }
         this.addAnimation({ name: 'stand', sequence: new FrameSequence({ frames: [6, 7], fps: 20, repeat: true })})
         this.addAnimation({ name: 'down', sequence: new FrameSequence({ frames: [21, 20, 19, 18, 17, 16], fps: 10, repeat: true })})
         this.addAnimation({ name: 'up', sequence: new FrameSequence({ frames: [16, 17, 18, 19, 20, 21], fps: 10, repeat: true })})
@@ -102,8 +102,8 @@ class Matchstick extends Sprite {
 
         const xDiff = this.centerPos.x - piggy.centerPos.x
         const xSlack = 2 // stops it twitching if it's above / below
-        if (xDiff + xSlack < 0) this.moveDirection = 'right'
-        else if (xDiff - xSlack > 0) this.moveDirection = 'left'
+        if (xDiff + xSlack < 0 && this.canMoveRight) this.moveDirection = 'right'
+        else if (xDiff - xSlack > 0 && this.canMoveLeft) this.moveDirection = 'left'
         else this.moveDirection = 'stand'
     }
 
