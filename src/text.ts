@@ -1,6 +1,6 @@
-import { PairXY } from "./common-types";
-import Entity from "./entity";
-import Game from "./game";
+import { PairXY } from './common-types'
+import Entity from './entity'
+import Game from './game'
 
 class Text extends Entity {
     private text: string
@@ -13,7 +13,7 @@ class Text extends Entity {
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        ctx.font = "10px Arial bolder";
+        ctx.font = '10px Arial bolder'
         ctx.fillStyle = 'white'
         ctx.fillText(this.text, this._position.x, this._position.y)
     }

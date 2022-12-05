@@ -55,7 +55,7 @@ class Game {
 
     clearEntities() {
         this.entityMap.clear()
-        this.entityRenderOrder = [];
+        this.entityRenderOrder = []
     }
 
     private recalcRenderOrder() {
@@ -63,9 +63,7 @@ class Game {
         this.entityRenderOrder = Array.from(this.entityMap.values()).sort((a, b) => a.zorder - b.zorder)
     }
 
-    protected requestResources() {
-
-    }
+    protected requestResources() {}
 
     run() {
         this.requestResources()
@@ -77,9 +75,7 @@ class Game {
         })
     }
 
-    protected async init() {
-        
-    }
+    protected async init() {}
 
     private requestAnimFrame() {
         // https://developer.mozilla.org/en/docs/Web/API/window.requestAnimationFrame
@@ -87,15 +83,15 @@ class Game {
     }
 
     private loop() {
-        const now = Date.now();
-        if (!this.lastTick) this.lastTick = now;
-        const timeDelta = (now - this.lastTick);
-    
-        this.tick(timeDelta);
-        this.render();
-        this.lastTick = now;
-    
-        this.requestAnimFrame();
+        const now = Date.now()
+        if (!this.lastTick) this.lastTick = now
+        const timeDelta = now - this.lastTick
+
+        this.tick(timeDelta)
+        this.render()
+        this.lastTick = now
+
+        this.requestAnimFrame()
     }
 
     protected tick(timeDelta: number) {
@@ -131,7 +127,6 @@ class Game {
             if (entity.visible) entity.render(this.context2d)
         }
     }
-
 }
 
 export default Game

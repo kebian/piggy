@@ -1,15 +1,15 @@
-import Background from "./background";
-import Kak from "./kak";
-import Ladder from "./ladder";
-import Matchstick from "./matchstick";
-import Piggy from "./piggy";
-import PiggyGame from "./piggygame";
-import Wall from "./wall";
+import Background from './background'
+import Kak from './kak'
+import Ladder from './ladder'
+import Matchstick from './matchstick'
+import Piggy from './piggy'
+import PiggyGame from './piggygame'
+import Wall from './wall'
 
 class Level {
     game: PiggyGame
 
-    constructor (game: PiggyGame) {
+    constructor(game: PiggyGame) {
         this.game = game
     }
 
@@ -23,25 +23,31 @@ class Level {
         this.game.clearEntities()
 
         for (const e of data) {
-            switch(e.type) {
+            switch (e.type) {
                 case 'Background':
                     this.game.addEntity(e.name, new Background(this.game, this.game.resPath(e.img)))
                     break
                 case 'Wall':
-                    this.game.addEntity(e.name, new Wall(this.game, {
-                        left: e.left,
-                        right: e.right,
-                        top: e.top,
-                        bottom: e.bottom
-                    }))
+                    this.game.addEntity(
+                        e.name,
+                        new Wall(this.game, {
+                            left: e.left,
+                            right: e.right,
+                            top: e.top,
+                            bottom: e.bottom,
+                        })
+                    )
                     break
                 case 'Ladder':
-                    this.game.addEntity(e.name, new Ladder(this.game, {
-                        left: e.left,
-                        right: e.right,
-                        top: e.top,
-                        bottom: e.bottom    
-                    }))
+                    this.game.addEntity(
+                        e.name,
+                        new Ladder(this.game, {
+                            left: e.left,
+                            right: e.right,
+                            top: e.top,
+                            bottom: e.bottom,
+                        })
+                    )
                     break
                 case 'Piggy':
                     this.game.addEntity(e.name, new Piggy(this.game, { x: e.x, y: e.y }))

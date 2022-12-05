@@ -1,4 +1,4 @@
-import EventEmitter from "eventemitter3";
+import EventEmitter from 'eventemitter3'
 
 interface Events {
     complete: () => void
@@ -12,7 +12,7 @@ class FrameSequence extends EventEmitter<Events> {
     private index: number
     private emittedComplete: boolean
 
-    constructor({ frames, fps, repeat} : { frames: number[], fps: number, repeat: boolean}) {
+    constructor({ frames, fps, repeat }: { frames: number[]; fps: number; repeat: boolean }) {
         super()
         this.frames = frames
         this.fps = fps
@@ -29,11 +29,10 @@ class FrameSequence extends EventEmitter<Events> {
         if (!framesElapsed) return
 
         let newFrameIndex = this.index + framesElapsed
-        if (newFrameIndex > this.frames.length -1) {
+        if (newFrameIndex > this.frames.length - 1) {
             if (this.repeat) this.index = newFrameIndex % this.frames.length
             this.handleComplete()
-        }
-        else this.index = newFrameIndex
+        } else this.index = newFrameIndex
         this.totalDelta = 0
     }
 

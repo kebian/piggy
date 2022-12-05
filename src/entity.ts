@@ -6,7 +6,7 @@ export interface EntityEvents {
     collision: (other: Entity) => void
 }
 
-export type EntityEventKey<T extends EntityEvents> = string & keyof T;
+export type EntityEventKey<T extends EntityEvents> = string & keyof T
 
 class Entity {
     protected game: Game
@@ -26,19 +26,17 @@ class Entity {
         this._position = { x: 0, y: 0 }
         this.force = { x: 0, y: 0 }
         this.smallForces = { x: 0, y: 0 }
-        this._collisionRect = { top: 0, left: 0, bottom: 0, right: 0}
+        this._collisionRect = { top: 0, left: 0, bottom: 0, right: 0 }
         this.solid = false
         this.visible = false
         this.zorder = 0
         this.usesGravity = false
     }
 
-    render(ctx: CanvasRenderingContext2D) {
-
-    }
+    render(ctx: CanvasRenderingContext2D) {}
 
     protected set position(pos: PairXY) {
-        this._position = { ...pos}
+        this._position = { ...pos }
     }
 
     get position() {
@@ -55,21 +53,21 @@ class Entity {
      * 1 pixel, so we accumulate the fractional forces and apply them when
      * they reach at least one pixel.  Without this, the sprites would
      * hardly ever move.
-     * @param timeDelta 
+     * @param timeDelta
      */
     private tickForces(timeDelta: number) {
         if (timeDelta === 0) return // No time has passed!
 
         if (!this.force.x && !this.force.y) {
-            this.smallForces = {x: 0, y: 0}
+            this.smallForces = { x: 0, y: 0 }
             return
         }
 
         const deltaRatio = timeDelta / 1000
 
         const pixelsToMove: PairXY = {
-            x: (this.force.x * deltaRatio) + this.smallForces.x,
-            y: (this.force.y * deltaRatio) + this.smallForces.y,
+            x: this.force.x * deltaRatio + this.smallForces.x,
+            y: this.force.y * deltaRatio + this.smallForces.y,
         }
 
         // We can only move by whole pixels so save off the fractional
@@ -78,24 +76,23 @@ class Entity {
             x: pixelsToMove.x % 1,
             y: pixelsToMove.y % 1,
         }
-                    
+
         // move by whole pixels
         this.moveByOffset({
             x: pixelsToMove.x - this.smallForces.x,
-            y: pixelsToMove.y - this.smallForces.y
+            y: pixelsToMove.y - this.smallForces.y,
         })
-        
     }
 
     /**
      * Returns collection rect in world coords
-     * @returns 
+     * @returns
      */
     get collisionRect() {
-        return this.getCollisionRectAt(this._position);
+        return this.getCollisionRectAt(this._position)
     }
 
-    getCollisionRectAt(pos: PairXY) : Rect{
+    getCollisionRectAt(pos: PairXY): Rect {
         return {
             left: this._collisionRect.left + pos.x,
             right: this._collisionRect.right + pos.x,
@@ -108,7 +105,7 @@ class Entity {
         const rect = this.collisionRect
         return {
             x: rect.left + Math.floor(rect.right - rect.left),
-            y: rect.top + Math.floor(rect.bottom - rect.top)
+            y: rect.top + Math.floor(rect.bottom - rect.top),
         } as PairXY
     }
 
@@ -117,23 +114,17 @@ class Entity {
     }
 
     private areRectsIntersecting(r1: Rect, r2: Rect) {
-        return (r1.left <= r2.right &&
-            r2.left <= r1.right &&
-            r1.top <= r2.bottom &&
-            r2.top <= r1.bottom)
+        return r1.left <= r2.right && r2.left <= r1.right && r1.top <= r2.bottom && r2.top <= r1.bottom
     }
 
     /**
      * // This is a 2D game and rects are colliding if they're immediately *next* to each other.
-     * @param r1 
-     * @param r2 
-     * @returns 
+     * @param r1
+     * @param r2
+     * @returns
      */
     private areRectsColliding(r1: Rect, r2: Rect) {
-        return (r1.left <= r2.right+1 &&
-            r2.left <= r1.right+1 &&
-            r1.top <= r2.bottom+1 &&
-            r2.top <= r1.bottom+1)
+        return r1.left <= r2.right + 1 && r2.left <= r1.right + 1 && r1.top <= r2.bottom + 1 && r2.top <= r1.bottom + 1
     }
 
     private testCollision() {
@@ -150,7 +141,7 @@ class Entity {
             left: myRect.left < destRect.left ? myRect.left : destRect.left,
             right: myRect.right > destRect.right ? myRect.right : destRect.right,
             top: myRect.top < destRect.top ? myRect.top : destRect.top,
-            bottom: myRect.bottom > destRect.bottom ? myRect.bottom : destRect.bottom
+            bottom: myRect.bottom > destRect.bottom ? myRect.bottom : destRect.bottom,
         }
 
         return this.game.entities.filter(e => {
@@ -195,13 +186,13 @@ class Entity {
     }
 
     resetForce() {
-        this.force = { x: 0, y: 0}
+        this.force = { x: 0, y: 0 }
     }
 
     private correctForCollisionX(deltaX: number, other: Entity) {
         let newX = this._position.x + deltaX
         const otherRect = other.collisionRect
-        if (deltaX > 0) newX = otherRect.left - this._collisionRect.right -1
+        if (deltaX > 0) newX = otherRect.left - this._collisionRect.right - 1
         else if (deltaX < 0) newX = otherRect.right - this._collisionRect.left + 1
         return newX
     }
@@ -209,11 +200,10 @@ class Entity {
     private correctForCollisionY(deltaY: number, other: Entity) {
         let newY = this._position.y + deltaY
         const otherRect = other.collisionRect
-        if (deltaY > 0) newY = otherRect.top - this._collisionRect.bottom -1
-        else if (deltaY < 0) newY = otherRect.bottom - this._collisionRect.top +1
+        if (deltaY > 0) newY = otherRect.top - this._collisionRect.bottom - 1
+        else if (deltaY < 0) newY = otherRect.bottom - this._collisionRect.top + 1
         return newY
     }
-
 
     private moveByOffset(offset: PairXY) {
         this.position = this.positionAfterCollisions(offset)
@@ -222,7 +212,7 @@ class Entity {
     protected positionAfterCollisions(offset: PairXY) {
         const newPosition: PairXY = {
             x: this._position.x + offset.x,
-            y: this._position.y + offset.y
+            y: this._position.y + offset.y,
         }
 
         if (this.solid) {
@@ -231,13 +221,12 @@ class Entity {
                 newPosition.x = this.intersectingSolidsTo({ x: newPosition.x, y: this._position.y })
                     .map(other => this.correctForCollisionX(offset.x, other))
                     .reduce((previousX, currentX) => {
-                        if (offset.x > 0) 
+                        if (offset.x > 0)
                             // Moving right so find the furthest left collision point
                             return currentX < previousX ? currentX : previousX
-                        else
-                            // Moving left so find the right most collision point
-                            return currentX > previousX ? currentX : previousX
-                    }, newPosition.x)   
+                        // Moving left so find the right most collision point
+                        else return currentX > previousX ? currentX : previousX
+                    }, newPosition.x)
             }
             if (offset.y) {
                 // And now check long the vertical plane
@@ -247,9 +236,8 @@ class Entity {
                         if (offset.y > 0)
                             // moving down so correct to highest
                             return currentY < previousY ? currentY : previousY
-                        else
-                            // moving up so correct to lowest
-                            return currentY > previousY ? currentY : previousY
+                        // moving up so correct to lowest
+                        else return currentY > previousY ? currentY : previousY
                     }, newPosition.y)
             }
         }
@@ -257,19 +245,19 @@ class Entity {
     }
 
     // TypeScript makes it very difficult / impossible to extend from classes that extend
-    // EventEmitter3 if you want to define new events in the extended classes, so we wrap 
+    // EventEmitter3 if you want to define new events in the extended classes, so we wrap
     // the functions with our own generics.
 
     protected _emit(eventName: string, ...params: any[]) {
         return this.eventEmmitter.emit(eventName, ...params)
     }
 
-    protected _on(eventName: string, fn: (...args:any[]) => any) {
-        return this.eventEmmitter.on(eventName, fn) 
+    protected _on(eventName: string, fn: (...args: any[]) => any) {
+        return this.eventEmmitter.on(eventName, fn)
     }
 
-    protected _once(eventName: string, fn: (...args:any[]) => any) {
-        return this.eventEmmitter.once(eventName, fn) 
+    protected _once(eventName: string, fn: (...args: any[]) => any) {
+        return this.eventEmmitter.once(eventName, fn)
     }
 
     protected _removeAllListeners(eventName: string) {
@@ -293,8 +281,4 @@ class Entity {
     }
 }
 
-
-
-
 export default Entity
-
