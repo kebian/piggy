@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="piggy.css" />
+        <script src="../dist/index.js"></script>
+        <script type="text/javascript">
+            window.onload = function() {
+                game = new PiggyGame(document.getElementById('piggy_canvas'));
+                game.run();
+            };
+        </script>
+    </head>
+    <body>
+        <canvas id="piggy_canvas" tabindex="1"></canvas>
+    </body>
+</html>

@@ -186,6 +186,6 @@
     {
         "name": "background", 
         "type": "Background",
-        "img": "img/level1.png"
+        "img": "levelImage"
     }
 ]
