@@ -1,6 +1,13 @@
 import PiggyGame from './piggygame'
+export { PiggyGame }
+export default PiggyGame
 
-export * from './piggygame'
-
-// @ts-ignore
+/*
 window.PiggyGame = PiggyGame
+
+declare global {
+    interface Window {
+        PiggyGame: typeof PiggyGame
+    }
+}
+*/

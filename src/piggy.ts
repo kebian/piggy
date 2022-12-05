@@ -1,11 +1,10 @@
-
-import { PairXY } from "./common-types";
-import { EntityEventKey, EntityEvents } from "./entity";
-import FrameSequence from "./framesequence";
-import Ladder from "./ladder";
-import PiggyGame from "./piggygame";
-import { AudioResource } from "./resourcecache";
-import Sprite from "./sprite";
+import { PairXY } from './common-types'
+import { EntityEventKey, EntityEvents } from './entity'
+import FrameSequence from './framesequence'
+import Ladder from './ladder'
+import PiggyGame from './piggygame'
+import { AudioResource } from './resourcecache'
+import Sprite from './sprite'
 
 type WalkDirection = 'left' | 'right' | 'none'
 type ClimbDirection = 'up' | 'down' | 'none'
@@ -22,13 +21,13 @@ class Piggy extends Sprite {
     private _falling: boolean
     private dead: boolean
     private sounds: {
-        footsteps: AudioResource['audio'],
-        fire:  AudioResource['audio'],
+        footsteps: AudioResource['audio']
+        fire: AudioResource['audio']
     }
     private piggyGame: PiggyGame
-    
+
     constructor(game: PiggyGame, position: PairXY) {
-        super(game, game.resPath('img/sprites.png'), { x: 0, y: 0 }, { x: 24, y: 24 }, 26)
+        super(game, 'spriteSheet', { x: 0, y: 0 }, { x: 24, y: 24 }, 26)
         this.piggyGame = game
         this.solid = true
         this.usesGravity = true
@@ -41,41 +40,62 @@ class Piggy extends Sprite {
         this.dead = false
         this._collisionRect = { left: 7, top: 1, right: 17, bottom: 22 }
 
-        this.addAnimation({ name: 'stand', sequence: new FrameSequence({
-            frames: [6],
-            fps: 1,
-            repeat: false
-        })})
-        this.addAnimation({ name: 'left', sequence: new FrameSequence({
-            frames: [5, 4, 3, 2, 1, 0],
-            fps: 10,
-            repeat: true
-        })})
-        this.addAnimation({ name: 'right', sequence: new FrameSequence({
-            frames: [7, 8, 9, 10, 11, 12],
-            fps: 10,
-            repeat: true  
-        })})
-        this.addAnimation({ name: 'fall', sequence: new FrameSequence({
-            frames: [13, 14],
-            fps: 10,
-            repeat: true
-        })})
-        this.addAnimation({ name: 'climb-up', sequence: new FrameSequence({
-            frames: [15, 16, 17, 18, 19, 20],
-            fps: 16,
-            repeat: true   
-        })})
-        this.addAnimation({ name: 'climb-down', sequence: new FrameSequence({
-            frames: [20, 19, 18, 17, 16, 15],
-            fps: 16,
-            repeat: true    
-        })})
-        this.addAnimation({ name: 'fire', sequence: new FrameSequence({
-            frames: [21, 22, 23, 24, 25],
-            fps: 24,
-            repeat: false   
-        })})
+        this.addAnimation({
+            name: 'stand',
+            sequence: new FrameSequence({
+                frames: [6],
+                fps: 1,
+                repeat: false,
+            }),
+        })
+        this.addAnimation({
+            name: 'left',
+            sequence: new FrameSequence({
+                frames: [5, 4, 3, 2, 1, 0],
+                fps: 10,
+                repeat: true,
+            }),
+        })
+        this.addAnimation({
+            name: 'right',
+            sequence: new FrameSequence({
+                frames: [7, 8, 9, 10, 11, 12],
+                fps: 10,
+                repeat: true,
+            }),
+        })
+        this.addAnimation({
+            name: 'fall',
+            sequence: new FrameSequence({
+                frames: [13, 14],
+                fps: 10,
+                repeat: true,
+            }),
+        })
+        this.addAnimation({
+            name: 'climb-up',
+            sequence: new FrameSequence({
+                frames: [15, 16, 17, 18, 19, 20],
+                fps: 16,
+                repeat: true,
+            }),
+        })
+        this.addAnimation({
+            name: 'climb-down',
+            sequence: new FrameSequence({
+                frames: [20, 19, 18, 17, 16, 15],
+                fps: 16,
+                repeat: true,
+            }),
+        })
+        this.addAnimation({
+            name: 'fire',
+            sequence: new FrameSequence({
+                frames: [21, 22, 23, 24, 25],
+                fps: 24,
+                repeat: false,
+            }),
+        })
 
         this.getAnimation('fire').sequence.on('complete', () => {
             this.visible = false
@@ -83,10 +103,10 @@ class Piggy extends Sprite {
         })
 
         this.sounds = {
-            footsteps: game.getAudioResource('audio/footsteps.mp3').audio,
-            fire: game.getAudioResource('audio/fire.mp3').audio
+            footsteps: game.getAudioResource('footstepsMp3').audio,
+            fire: game.getAudioResource('fireMp3').audio,
         }
-        this.sounds.footsteps.volume = 0.1;
+        this.sounds.footsteps.volume = 0.1
         this.sounds.footsteps.loop = true
     }
 
@@ -133,7 +153,6 @@ class Piggy extends Sprite {
         // set new forces
         if (newDirection === 'left') this.applyReverseForce(walkForce)
         else if (newDirection === 'right') this.applyForce(walkForce)
-    
 
         /*
         if (this.climbDirection === 'none' && !this.falling) {
@@ -152,7 +171,6 @@ class Piggy extends Sprite {
     private determineMovementAnimation() {
         let animation = 'stand'
         if (this.falling) animation = 'fall'
-
         else if (this.climbDirection === 'up') animation = 'climb-up'
         else if (this.climbDirection === 'down') animation = 'climb-down'
         else if (this.walkDirection === 'left') animation = 'left'
@@ -167,7 +185,7 @@ class Piggy extends Sprite {
     set climbDirection(newDirection: ClimbDirection) {
         if (newDirection === this._climbDirection) return
 
-        const climbForce: PairXY = { x: 0, y: -this.climbSpeed}
+        const climbForce: PairXY = { x: 0, y: -this.climbSpeed }
 
         // unset existing forces
         if (this._climbDirection === 'up') this.applyReverseForce(climbForce)
@@ -183,7 +201,6 @@ class Piggy extends Sprite {
         else if (newDirection === 'down') this.setAnimation('climb-down')
         else if (newDirection === 'none') this.setAnimation('stand')
         */
-        
 
         this._climbDirection = newDirection
 
@@ -214,10 +231,11 @@ class Piggy extends Sprite {
     }
 
     get isLadderAbove() {
-        return this.collidingEntitiesAt({ x: this._position.x, y: this._position.y -1}, false)
-            .some(entity => entity instanceof Ladder)
+        return this.collidingEntitiesAt({ x: this._position.x, y: this._position.y - 1 }, false).some(
+            entity => entity instanceof Ladder
+        )
     }
-    
+
     private handleInput() {
         if (!this.piggyGame.ingame) {
             this.footsteps(false)
@@ -228,39 +246,32 @@ class Piggy extends Sprite {
         if (this.falling) {
             // We're falling.  Don't allow steering in the air.
             this.walkDirection = 'none'
-            
+
             // And if we're falling, we can't be climbing
             this.climbDirection = 'none'
-        }
-        else {
+        } else {
             const onLadder = this.piggyGame.isEntityOnLadder(this)
 
             if (this.game.input.keyIsDown('LEFT')) {
                 if (this.walkDirection !== 'left') this.walkDirection = 'left'
-            }
-            else if (this.walkDirection === 'left') this.walkDirection = 'none'
-                
+            } else if (this.walkDirection === 'left') this.walkDirection = 'none'
+
             if (this.game.input.keyIsDown('RIGHT')) {
                 if (this.walkDirection !== 'right') this.walkDirection = 'right'
-            }
-            else if (this.walkDirection === 'right') this.walkDirection = 'none'
-                
-            if (this.game.input.keyIsDown('UP') && onLadder && this.isLadderAbove) { 
+            } else if (this.walkDirection === 'right') this.walkDirection = 'none'
+
+            if (this.game.input.keyIsDown('UP') && onLadder && this.isLadderAbove) {
                 if (this.climbDirection !== 'up') this.climbDirection = 'up'
-                
-            }
-            else if (this.climbDirection === 'up') this.climbDirection = 'none'
-        
+            } else if (this.climbDirection === 'up') this.climbDirection = 'none'
+
             if (this.game.input.keyIsDown('DOWN') && onLadder) {
                 if (this.climbDirection !== 'down') this.climbDirection = 'down'
-            }
-            else if (this.climbDirection === 'down') this.climbDirection = 'none'
+            } else if (this.climbDirection === 'down') this.climbDirection = 'none'
 
             if (this.walkDirection === 'left' && !this.canMoveLeft) this.walkDirection = 'none'
-            if (this.walkDirection === 'right' && !this.canMoveRight) this.walkDirection = 'none'            
-        }        
+            if (this.walkDirection === 'right' && !this.canMoveRight) this.walkDirection = 'none'
+        }
     }
 }
 
 export default Piggy
-

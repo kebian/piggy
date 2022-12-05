@@ -1,28 +1,35 @@
-import Entity from "./entity"
-import Game from "./game"
-import Kak from "./kak"
-import Ladder from "./ladder"
-import Level from "./level"
-import Matchstick from "./matchstick"
-import Piggy from "./piggy"
-import { AudioResource } from "./resourcecache"
-import TitleScreen from "./titlescreen"
+import Entity from './entity'
+import Game from './game'
+import Kak from './kak'
+import Ladder from './ladder'
+import Level from './level'
+import Matchstick from './matchstick'
+import Piggy from './piggy'
+import { AudioResource } from './resourcecache'
+import TitleScreen from './titlescreen'
 import originalLevel from '../levels/original.json'
+
+import spriteSheet from '../img/sprites.png'
+import levelImage from '../img/level1.png'
+import titleImage from '../img/title.png'
+import burpMp3 from '../audio/burp.mp3'
+import fireMp3 from '../audio/fire.mp3'
+import footstepsMp3 from '../audio/footsteps.mp3'
 
 class PiggyGame extends Game {
     private _ingame: boolean
-    private resourceRootPath : string
+    private resourceRootPath: string
     private level: Level
 
     constructor(canvas: HTMLCanvasElement, resourceRootPath: string = '') {
         super(canvas)
 
         // This was the original resolution of the game & we scale it up using css.
-        canvas.width=320;
-        canvas.height=200;
+        canvas.width = 320
+        canvas.height = 200
 
         this._ingame = false
-        this.gravityForce = { x: 0, y: 100} // gravity
+        this.gravityForce = { x: 0, y: 100 } // gravity
         this.level = new Level(this)
         this.resourceRootPath = resourceRootPath
         if (resourceRootPath !== '' && !this.resourceRootPath.endsWith('/')) this.resourceRootPath += '/'
@@ -39,6 +46,16 @@ class PiggyGame extends Game {
     protected requestResources() {
         super.requestResources()
 
+        this.resources.loadImports([
+            { name: 'spriteSheet', data: spriteSheet },
+            { name: 'levelImage', data: levelImage },
+            { name: 'titleImage', data: titleImage },
+            { name: 'burpMp3', data: burpMp3 },
+            { name: 'fireMp3', data: fireMp3 },
+            { name: 'footstepsMp3', data: footstepsMp3 },
+        ])
+
+        /*
         const files = [
             'img/sprites.png',
             'img/level1.png',
@@ -49,6 +66,7 @@ class PiggyGame extends Game {
         ].map(f => this.resPath(f))
 
         this.resources.load(files)
+        */
     }
 
     getResource(url: string) {
@@ -67,7 +85,7 @@ class PiggyGame extends Game {
         this._ingame = false
         //await this.level.load('original')
         this.level.loadFromData(originalLevel)
-        
+
         const piggy = this.entityByName('piggy') as Piggy
         if (piggy === undefined) throw new Error("Can't play Piggy without a Piggy!")
         piggy
@@ -77,7 +95,7 @@ class PiggyGame extends Game {
                 else if (entity instanceof Kak) {
                     this.endGame()
                     console.log('Piggy reached the Kakacola!')
-                    this.getAudioResource('audio/burp.mp3').audio.play();
+                    this.getAudioResource('burpMp3').audio.play()
                     setTimeout(() => this.init(), 5000)
                 }
             })
@@ -96,7 +114,6 @@ class PiggyGame extends Game {
     private startGame() {
         this._ingame = true
         console.log('Starting game')
-
     }
 
     private endGame() {
@@ -110,7 +127,7 @@ class PiggyGame extends Game {
     }
 
     public isEntityOnLadder(entity: Entity) {
-        const other = entity.collidingEntities(false).find( e => {
+        const other = entity.collidingEntities(false).find(e => {
             return e instanceof Ladder
         })
         if (other === undefined) return false
@@ -122,7 +139,6 @@ class PiggyGame extends Game {
         this.context2d.fillRect(0, 0, this.canvas.width, this.canvas.height)
         super.render()
     }
-
 }
 
 export default PiggyGame

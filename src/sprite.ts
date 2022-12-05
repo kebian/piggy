@@ -1,8 +1,8 @@
-import { PairXY } from "./common-types";
-import Entity from "./entity";
-import FrameSequence from "./framesequence";
-import Game from "./game";
-import { ImageResource } from "./resourcecache";
+import { PairXY } from './common-types'
+import Entity from './entity'
+import FrameSequence from './framesequence'
+import Game from './game'
+import { ImageResource } from './resourcecache'
 
 type Animation = {
     name: string
@@ -18,17 +18,17 @@ class Sprite extends Entity {
     private framesPerRow: number
     private sheet: HTMLImageElement
 
-    constructor(game: Game, url: string, sheetPos: PairXY, size: PairXY, numFrames: number) {
+    constructor(game: Game, resourceName: string, sheetPos: PairXY, size: PairXY, numFrames: number) {
         super(game)
         this.sheetPos = sheetPos
         this.size = size
         this.numFrames = numFrames
-        this.sheet = (game.resources.get(url) as ImageResource).image
+        this.sheet = (game.resources.get(resourceName) as ImageResource).image
         this.framesPerRow = Math.floor(this.sheet.width / size.x) // TODO: Check this - it was size[1]
         this.animations = new Map()
         this.currentAnimation = null
         this.visible = true
-        this._collisionRect = { left: 0, top: 0, right: size.x -1, bottom: size.y -1}
+        this._collisionRect = { left: 0, top: 0, right: size.x - 1, bottom: size.y - 1 }
     }
 
     get currentFrame() {
@@ -48,8 +48,9 @@ class Sprite extends Entity {
         ctx.fillRect(cr.left, cr.top, cr.right - cr.left +1, cr.bottom - cr.top +1);
         */
         ctx.drawImage(
-            this.sheet, this.sheetPos.x + (col * this.size.x), 
-            this.sheetPos.y + (row * this.size.y),
+            this.sheet,
+            this.sheetPos.x + col * this.size.x,
+            this.sheetPos.y + row * this.size.y,
             this.size.x,
             this.size.y,
             this._position.x,
@@ -57,7 +58,6 @@ class Sprite extends Entity {
             this.size.x,
             this.size.y
         )
-        
     }
 
     addAnimation(animation: Animation) {
@@ -89,11 +89,11 @@ class Sprite extends Entity {
     }
 
     get canMoveLeft() {
-        return (this.positionAfterCollisions({ x: -1, y: 0}).x !== this.position.x)
+        return this.positionAfterCollisions({ x: -1, y: 0 }).x !== this.position.x
     }
 
     get canMoveRight() {
-        return (this.positionAfterCollisions({ x: +1, y: 0}).x !== this.position.x)
+        return this.positionAfterCollisions({ x: +1, y: 0 }).x !== this.position.x
     }
 }
 
