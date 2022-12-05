@@ -107,6 +107,10 @@ class PiggyGame extends Game {
         this.input.on('keypress', () => {
             if (!this._ingame) this.startGame()
         })
+        this.input.on('touch', () => {
+            if (!this._ingame) this.startGame()
+        })
+
         this.addEntity('title', new TitleScreen(this))
         console.log('Game ready')
     }

@@ -35,7 +35,11 @@ class Entity {
 
     render(ctx: CanvasRenderingContext2D) {}
 
-    protected set position(pos: PairXY) {
+    set position(pos: PairXY) {
+        this.setPosition(pos)
+    }
+
+    protected setPosition(pos: PairXY) {
         this._position = { ...pos }
     }
 
@@ -104,8 +108,8 @@ class Entity {
     get centerPos() {
         const rect = this.collisionRect
         return {
-            x: rect.left + Math.floor(rect.right - rect.left),
-            y: rect.top + Math.floor(rect.bottom - rect.top),
+            x: rect.left + Math.round((rect.right - rect.left) / 2),
+            y: rect.top + Math.round((rect.bottom - rect.top) / 2),
         } as PairXY
     }
 

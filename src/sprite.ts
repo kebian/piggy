@@ -24,7 +24,7 @@ class Sprite extends Entity {
         this.size = size
         this.numFrames = numFrames
         this.sheet = (game.resources.get(resourceName) as ImageResource).image
-        this.framesPerRow = Math.floor(this.sheet.width / size.x) // TODO: Check this - it was size[1]
+        this.framesPerRow = Math.floor(this.sheet.width / size.x)
         this.animations = new Map()
         this.currentAnimation = null
         this.visible = true
@@ -43,10 +43,14 @@ class Sprite extends Entity {
 
         /*
         // Temporarily render collision rect
-        const cr = this.collisionRect;
-        ctx.fillStyle="blue";
-        ctx.fillRect(cr.left, cr.top, cr.right - cr.left +1, cr.bottom - cr.top +1);
+        const cr = this.collisionRect
+        ctx.fillStyle = 'blue'
+        ctx.fillRect(cr.left, cr.top, cr.right - cr.left + 1, cr.bottom - cr.top + 1)
+        const center = this.centerPos
+        ctx.fillStyle = 'yellow'
+        ctx.fillRect(center.x, center.y, 1, 1)
         */
+
         ctx.drawImage(
             this.sheet,
             this.sheetPos.x + col * this.size.x,

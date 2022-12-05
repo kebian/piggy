@@ -110,6 +110,11 @@ class Piggy extends Sprite {
         this.sounds.footsteps.loop = true
     }
 
+    setPosition(newPos: PairXY) {
+        super.setPosition(newPos)
+        this.game.input.relativeTouchPoint = this.centerPos
+    }
+
     get falling() {
         return this._falling
     }
@@ -252,19 +257,19 @@ class Piggy extends Sprite {
         } else {
             const onLadder = this.piggyGame.isEntityOnLadder(this)
 
-            if (this.game.input.keyIsDown('LEFT')) {
+            if (this.game.input.keyIsDown('ArrowLeft')) {
                 if (this.walkDirection !== 'left') this.walkDirection = 'left'
             } else if (this.walkDirection === 'left') this.walkDirection = 'none'
 
-            if (this.game.input.keyIsDown('RIGHT')) {
+            if (this.game.input.keyIsDown('ArrowRight')) {
                 if (this.walkDirection !== 'right') this.walkDirection = 'right'
             } else if (this.walkDirection === 'right') this.walkDirection = 'none'
 
-            if (this.game.input.keyIsDown('UP') && onLadder && this.isLadderAbove) {
+            if (this.game.input.keyIsDown('ArrowUp') && onLadder && this.isLadderAbove) {
                 if (this.climbDirection !== 'up') this.climbDirection = 'up'
             } else if (this.climbDirection === 'up') this.climbDirection = 'none'
 
-            if (this.game.input.keyIsDown('DOWN') && onLadder) {
+            if (this.game.input.keyIsDown('ArrowDown') && onLadder) {
                 if (this.climbDirection !== 'down') this.climbDirection = 'down'
             } else if (this.climbDirection === 'down') this.climbDirection = 'none'
 

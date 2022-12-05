@@ -1,6 +1,6 @@
 {
     "name": "@kebian/piggy",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "description": "Piggy in Search of Kak (a simple platform game)",
     "private": false,
     "main": "dist/index.js",
