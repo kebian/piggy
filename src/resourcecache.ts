@@ -110,10 +110,31 @@ class ResourceCache extends EventEmitter<Events> {
         this.emit('ready')
     }
 
-    async loadImports(items: { name: string; data: string }[]) {
+    async loadImports(items: { name: string; data: string | any }[]) {
         for (const item of items) {
-            if (item.data.startsWith('data:image')) await this.createImageResource(item.name, item.data)
-            else if (item.data.startsWith('data:audio')) await this.createAudioResource(item.name, item.data)
+            // could be imported via file-loader
+            if (typeof item.data === 'string') {
+                if (item.data.startsWith('data:image')) await this.createImageResource(item.name, item.data)
+                else if (item.data.startsWith('data:audio')) await this.createAudioResource(item.name, item.data)
+                else throw new Error('Unknown resource type')
+            }
+            // or url-loader
+            else if ('src' in item.data) {
+                const url = item.data.src
+                switch (this.fileExt(item.data.src)) {
+                    case 'png':
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'gif':
+                        await this.createImageResource(item.name, url)
+                        break
+                    case 'mp3':
+                        await this.createAudioResource(item.name, url)
+                        break
+                    default:
+                        throw new Error(`Don't know how to load ${url}`)
+                }
+            }
         }
         this.emit('ready')
     }
