@@ -13,6 +13,7 @@ class Game {
     private resourceCache: ResourceCache // might not need this now
     protected entityMap: Map<string, Entity>
     private gravityApplied: Map<Entity, boolean>
+    private _stopped: boolean
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvasEl = canvas
@@ -26,6 +27,11 @@ class Game {
         this.gravityForce = { x: 0, y: 0 }
         this.gravityApplied = new Map()
         this.resourceCache = new ResourceCache()
+        this._stopped = false
+    }
+
+    get stopped() {
+        return this._stopped
     }
 
     get canvas() {
@@ -66,6 +72,7 @@ class Game {
     protected requestResources() {}
 
     run() {
+        this._stopped = false
         this.requestResources()
         this.canvas.focus()
         this.resourceCache.on('ready', async () => {
@@ -73,6 +80,10 @@ class Game {
             await this.init()
             this.requestAnimFrame()
         })
+    }
+
+    stop() {
+        this._stopped = true
     }
 
     protected async init() {}
@@ -83,6 +94,7 @@ class Game {
     }
 
     private loop() {
+        if (this._stopped) return
         const now = Date.now()
         if (!this.lastTick) this.lastTick = now
         const timeDelta = now - this.lastTick
