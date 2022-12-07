@@ -88,14 +88,21 @@ class ResourceCache extends EventEmitter<Events> {
     private async createImageResource(name: string, url: string): Promise<ImageResource> {
         return new Promise((resolve, reject) => {
             const image = new Image()
+            const unhook = () => {
+                image.onload = null
+                image.onerror = null
+            }
             image.onload = () => {
                 const resource: ImageResource = { type: 'image', image }
                 this.cache.set(name, resource)
                 console.log('loaded', name)
-                image.onload = null
+                unhook()
                 resolve(resource)
             }
-            image.onerror = e => reject(e)
+            image.onerror = e => {
+                unhook()
+                reject(e)
+            }
             image.src = url
         })
     }
@@ -104,8 +111,14 @@ class ResourceCache extends EventEmitter<Events> {
         return new Promise((resolve, reject) => {
             const audio = new Audio()
 
+            const unhook = () => {
+                audio.onerror = null
+                audio.onloadstart = null
+            }
+
             audio.onerror = e => {
                 console.error(e)
+                unhook()
                 reject(e)
             }
 
@@ -113,7 +126,7 @@ class ResourceCache extends EventEmitter<Events> {
                 const resource: AudioResource = { type: 'audio', audio }
                 this.cache.set(name, resource)
                 console.log('loaded', name)
-                audio.oncanplay = null
+                unhook()
                 resolve(resource)
             }
             audio.src = url
