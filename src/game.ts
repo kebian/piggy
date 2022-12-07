@@ -83,6 +83,9 @@ class Game {
     }
 
     stop() {
+        if (this._stopped) return
+        this.input.enabled = false
+        this.resourceCache.cleanUp()
         this._stopped = true
     }
 

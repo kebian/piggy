@@ -8,7 +8,6 @@ import Piggy from './piggy'
 import { AudioResource } from './resourcecache'
 import TitleScreen from './titlescreen'
 import originalLevel from '../levels/original.json'
-
 import spriteSheet from '../img/sprites.png'
 import levelImage from '../img/level1.png'
 import titleImage from '../img/title.png'
@@ -95,7 +94,9 @@ class PiggyGame extends Game {
                 else if (entity instanceof Kak) {
                     this.endGame()
                     console.log('Piggy reached the Kakacola!')
-                    this.getAudioResource('burpMp3').audio.play()
+                    this.getAudioResource('burpMp3')
+                        .audio.play()
+                        .catch(() => false)
                     setTimeout(() => this.init(), 5000)
                 }
             })
@@ -116,6 +117,7 @@ class PiggyGame extends Game {
     }
 
     private startGame() {
+        if (this._ingame) return
         this._ingame = true
         console.log('Starting game')
     }

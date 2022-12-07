@@ -15,32 +15,36 @@ class Input extends EventEmitter<Events> {
     private keys: Map<string, KeyState>
     private _relativeTouchPoint: PairXY
     private currentTouchPoint: PairXY | undefined
+    private _enabled: boolean
+    private keydownEventHandler: (e: KeyboardEvent) => void
+    private keyupEventHandler: (e: KeyboardEvent) => void
+    private blurEventHandler: (e: FocusEvent) => void
+    private touchEventHandler: (e: TouchEvent) => void
+    private touchendEventHandler: (e: TouchEvent) => void
 
     constructor(game: Game) {
         super()
         this.game = game
+        this._enabled = false
+
         this.keys = new Map()
         this._relativeTouchPoint = {
             x: Math.round(game.canvas.width / 2),
             y: Math.round(game.canvas.height / 2),
         }
 
-        document.addEventListener('keydown', e => {
+        this.keydownEventHandler = e => {
             this.handleKeyEvent(e, 'down')
             this.emit('keypress', e)
             if (document.activeElement === this.game.canvas) e.preventDefault()
-        })
-
-        document.addEventListener('keyup', e => {
+        }
+        this.keyupEventHandler = e => {
             this.handleKeyEvent(e, 'up')
             if (document.activeElement === this.game.canvas) e.preventDefault()
-        })
+        }
+        this.blurEventHandler = e => this.keys.clear()
 
-        window.addEventListener('blur', e => {
-            this.keys.clear()
-        })
-
-        const handleTouchEvent = (e: TouchEvent) => {
+        this.touchEventHandler = e => {
             const touches = e.touches.item(0)
             if (touches?.target !== this.game.canvas) return
 
@@ -58,17 +62,43 @@ class Input extends EventEmitter<Events> {
             }
         }
 
-        game.canvas.addEventListener('touchstart', handleTouchEvent)
-        game.canvas.addEventListener('touchmove', handleTouchEvent)
-
-        game.canvas.addEventListener('touchend', e => {
+        this.touchendEventHandler = e => {
             this.keys.clear()
             this.currentTouchPoint = undefined
             if (e.cancelable) {
                 e.stopPropagation()
                 e.preventDefault()
             }
-        })
+        }
+        this.enabled = true
+    }
+
+    set enabled(newVal: boolean) {
+        if (newVal === this._enabled) return
+        if (newVal) this.addListeners()
+        else this.removeListeners()
+
+        this._enabled = newVal
+    }
+
+    private addListeners() {
+        console.log('adding listeners')
+        document.addEventListener('keydown', this.keydownEventHandler)
+        document.addEventListener('keyup', this.keyupEventHandler)
+        window.addEventListener('blur', this.blurEventHandler)
+        this.game.canvas.addEventListener('touchstart', this.touchEventHandler)
+        this.game.canvas.addEventListener('touchmove', this.touchEventHandler)
+        this.game.canvas.addEventListener('touchend', this.touchendEventHandler)
+    }
+
+    private removeListeners() {
+        console.log('removing listeners')
+        document.removeEventListener('keydown', this.keydownEventHandler)
+        document.removeEventListener('keyup', this.keyupEventHandler)
+        window.removeEventListener('blur', this.blurEventHandler)
+        this.game.canvas.removeEventListener('touchstart', this.touchEventHandler)
+        this.game.canvas.removeEventListener('touchmove', this.touchEventHandler)
+        this.game.canvas.removeEventListener('touchend', this.touchendEventHandler)
     }
 
     get relativeTouchPoint() {
@@ -80,11 +110,20 @@ class Input extends EventEmitter<Events> {
         if (this.currentTouchPoint) this.handleCanvasTouch(this.currentTouchPoint)
     }
 
+    private getHtmlElementOffset(el: HTMLElement): PairXY {
+        const rect = el.getBoundingClientRect()
+        return {
+            x: rect.left,
+            y: rect.top,
+        }
+    }
+
     private touchPositionToCanvas(touchPos: PairXY): PairXY {
         const c = this.game.canvas
+        const offset = this.getHtmlElementOffset(c)
         return {
-            x: Math.round(((touchPos.x - c.offsetLeft) / c.clientWidth) * c.width),
-            y: Math.round(((touchPos.y - c.offsetTop) / c.clientHeight) * c.height),
+            x: Math.round(((touchPos.x - offset.x) / c.clientWidth) * c.width),
+            y: Math.round(((touchPos.y - offset.y) / c.clientHeight) * c.height),
         }
     }
 

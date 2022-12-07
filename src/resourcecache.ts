@@ -22,13 +22,47 @@ export interface ImageResource extends Resource {
 
 class ResourceCache extends EventEmitter<Events> {
     private cache: Map<string, Resource>
+    private fixedAudioPerms: boolean
 
     constructor() {
         super()
         this.cache = new Map()
+        this.fixedAudioPerms = false
     }
 
-    private loadSingleResource(url: string) {
+    cleanUp() {
+        for (const resource of this.cache.values()) {
+            if (resource.type === 'audio') {
+                const audio = (resource as AudioResource).audio
+                audio.src = ''
+            } else {
+                const image = (resource as ImageResource).image
+                image.src = ''
+            }
+        }
+        this.cache.clear()
+        console.log('cleaned up resources')
+    }
+
+    /**
+     * Calling this in response to a click will allow audio to play on Safari
+     * and iOS, however the audio performance is awful
+     * @returns
+     */
+    private fixAudioPermissions() {
+        return
+        if (this.fixedAudioPerms) return
+        for (const [name, resource] of this.cache) {
+            if (resource.type !== 'audio') continue
+            const audio = (resource as AudioResource).audio
+            const src = audio.src
+            audio.src = src
+        }
+
+        this.fixedAudioPerms = true
+    }
+
+    private async loadSingleResource(url: string): Promise<Resource> {
         return new Promise<Resource>((resolve, reject) => {
             // Check to see if it's already loaded
             const existing = this.cache.get(url)
@@ -42,29 +76,9 @@ class ResourceCache extends EventEmitter<Events> {
                 case 'jpeg':
                 case 'jpg':
                 case 'gif':
-                    const image = new Image()
-                    image.onload = () => {
-                        const resource: ImageResource = { type: 'image', image }
-                        this.cache.set(url, resource)
-                        console.log('loaded', url)
-                        image.onload = null
-                        resolve(resource)
-                    }
-                    image.onerror = e => reject(e)
-                    image.src = url
-                    break
+                    return this.createImageResource(url, url)
                 case 'mp3':
-                    const audio = new Audio()
-                    audio.oncanplay = () => {
-                        const resource: AudioResource = { type: 'audio', audio }
-                        this.cache.set(url, resource)
-                        console.log('loaded', url)
-                        audio.oncanplay = null
-                        resolve(resource)
-                    }
-                    audio.onerror = e => reject(e)
-                    audio.src = url
-                    break
+                    return this.createAudioResource(url, url)
                 default:
                     reject(`Unknown resource type: ${url}`)
             }
@@ -89,14 +103,19 @@ class ResourceCache extends EventEmitter<Events> {
     private async createAudioResource(name: string, url: string): Promise<AudioResource> {
         return new Promise((resolve, reject) => {
             const audio = new Audio()
-            audio.oncanplay = () => {
+
+            audio.onerror = e => {
+                console.error(e)
+                reject(e)
+            }
+
+            audio.onloadstart = () => {
                 const resource: AudioResource = { type: 'audio', audio }
                 this.cache.set(name, resource)
                 console.log('loaded', name)
                 audio.oncanplay = null
                 resolve(resource)
             }
-            audio.onerror = e => reject(e)
             audio.src = url
         })
     }

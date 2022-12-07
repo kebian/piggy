@@ -20,6 +20,7 @@ class Piggy extends Sprite {
     private _climbDirection: ClimbDirection
     private _falling: boolean
     private dead: boolean
+    private _playFootsteps: boolean
     private sounds: {
         footsteps: AudioResource['audio']
         fire: AudioResource['audio']
@@ -37,6 +38,7 @@ class Piggy extends Sprite {
         this._walkDirection = 'none'
         this._climbDirection = 'none'
         this._falling = false
+        this._playFootsteps = false
         this.dead = false
         this._collisionRect = { left: 7, top: 1, right: 17, bottom: 22 }
 
@@ -110,6 +112,20 @@ class Piggy extends Sprite {
         this.sounds.footsteps.loop = true
     }
 
+    get playFootsteps() {
+        return this._playFootsteps
+    }
+
+    set playFootsteps(play: boolean) {
+        if (this._playFootsteps === play) return
+
+        const audio = this.sounds.footsteps
+
+        if (play && audio.paused) audio.play().catch(() => false)
+        else if (!play) audio.pause()
+        this._playFootsteps = play
+    }
+
     setPosition(newPos: PairXY) {
         super.setPosition(newPos)
         this.game.input.relativeTouchPoint = this.centerPos
@@ -166,7 +182,7 @@ class Piggy extends Sprite {
             else this.setAnimation('stand')
         }
         */
-        this.footsteps(newDirection === 'left' || newDirection === 'right')
+        this.playFootsteps = newDirection === 'left' || newDirection === 'right'
         this._walkDirection = newDirection
 
         // set animations
@@ -212,16 +228,11 @@ class Piggy extends Sprite {
         this.determineMovementAnimation()
     }
 
-    private footsteps(play: boolean) {
-        if (play) this.sounds.footsteps.play()
-        else this.sounds.footsteps.pause()
-    }
-
     public die() {
         if (this.dead === true) return // already dead
         this.dead = true
         this.setAnimation('fire')
-        this.sounds.fire.play()
+        this.sounds.fire.play().catch(() => false)
     }
 
     public tick(timeDelta: number): void {
@@ -243,7 +254,7 @@ class Piggy extends Sprite {
 
     private handleInput() {
         if (!this.piggyGame.ingame) {
-            this.footsteps(false)
+            this.playFootsteps = false
             if (!this.falling) this.setAnimation('stand')
             return
         }
